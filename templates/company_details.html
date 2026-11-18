@@ -1,0 +1,235 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ company.name }} | InternTrack</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/companies.css') }}">
+    <style>
+        .profile-page {
+            max-width: 1050px;
+            margin: 55px auto;
+            padding: 0 25px;
+        }
+
+        .back-link {
+            color: #7868dc;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .profile-card {
+            margin-top: 25px;
+            padding: 38px;
+            background: white;
+            border: 1px solid #efedf6;
+            border-radius: 20px;
+        }
+
+        .profile-heading {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .profile-logo {
+            width: 75px;
+            height: 75px;
+            display: grid;
+            place-items: center;
+            background: #eeeaff;
+            color: #7868dc;
+            border-radius: 19px;
+            font-size: 32px;
+            font-weight: 800;
+        }
+
+        .profile-heading h1 {
+            font-size: 30px;
+            color: #393851;
+        }
+
+        .profile-heading p {
+            margin-top: 8px;
+            color: #9290a1;
+            font-size: 13px;
+        }
+
+        .profile-description {
+            margin-top: 30px;
+            color: #77778d;
+            line-height: 1.9;
+            font-size: 14px;
+        }
+
+        .profile-section {
+            margin-top: 32px;
+        }
+
+        .profile-section h2 {
+            font-size: 18px;
+            color: #45435f;
+            margin-bottom: 13px;
+        }
+
+        .profile-skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .profile-skills span {
+            padding: 10px 15px;
+            background: #f0edff;
+            color: #7666d8;
+            border-radius: 8px;
+            font-size: 12px;
+        }
+
+        .role-list {
+            color: #77778d;
+            line-height: 2;
+            font-size: 13px;
+            padding-left: 20px;
+        }
+
+        .profile-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 35px;
+        }
+
+        .profile-actions a {
+            padding: 14px 20px;
+            border-radius: 9px;
+            background: #8170e7;
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .profile-actions a.secondary {
+            background: #e9f5ff;
+            color: #4f86b8;
+        }
+
+        @media(max-width: 600px) {
+            .profile-card { padding: 23px; }
+            .profile-heading h1 { font-size: 23px; }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="navbar">
+    <a href="/" class="brand">
+        <span class="brand-logo">I</span>
+        InternTrack
+    </a>
+    <nav>
+        <a href="/">Explore</a>
+        <a href="/companies">Companies</a>
+    </nav>
+    <a href="/dashboard" class="nav-cta">My Dashboard ↗</a>
+</header>
+
+<main class="profile-page">
+    {% with messages = get_flashed_messages() %}{% if messages %}<div class="flash-message">{% for message in messages %}{{ message }}{% endfor %}</div>{% endif %}{% endwith %}
+
+    <a href="/companies" class="back-link">← Back to companies</a>
+
+    <section class="profile-card">
+
+        <div class="profile-heading">
+            <div class="profile-logo">{{ company.name[0] }}</div>
+            <div>
+                <h1>{{ company.name }}</h1>
+                <p>{{ company.industry }} · {{ company.location }}</p>
+            </div>
+        </div>
+
+        <p class="profile-description">
+            {{ company.description }}
+        </p>
+
+        <div class="profile-section">
+            <h2>Technologies and skills</h2>
+            <div class="profile-skills">
+                {% for skill in (company.technologies or company.skills or '').split(',') %}
+                    <span>{{ skill.strip() }}</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="profile-section">
+            <h2>Internship roles to explore</h2>
+            <ul class="role-list">
+                {% for role in (company.internship_roles or company.roles or '').split(',') %}
+                    <li>{{ role.strip() }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+
+        <div class="profile-section">
+            <h2>Hiring information</h2>
+            <div class="company-stats detail-stats">
+                <span><b>{{ company.applicants }}</b> applicants</span>
+                <span><b>{{ company.hired }}</b> students hired</span>
+                <span><b>{{ company.vacancies or 'Not specified' }}</b> vacancies</span>
+                <span><b>{{ company.hiring_status or 'Open' }}</b> hiring status</span>
+                <span><b>{{ company.deadline or 'Not specified' }}</b> application deadline</span>
+            </div>
+        </div>
+        <div class="profile-section">
+            <h2>Eligibility criteria</h2>
+            <p class="profile-description">{{ company.eligibility or 'Eligibility criteria have not been provided by the company.' }}</p>
+            <p class="profile-description">Minimum CGPA: {{ company.min_cgpa or 'Not specified' }}</p>
+            <p class="profile-description">Selection process: {{ company.selection_process or 'Not specified' }}</p>
+        </div>
+        <div class="profile-section apply-panel">
+            <h2>Apply for an internship</h2>
+            {% if company.hiring_status != 'Closed' %}
+            <form action="/apply" method="POST" class="apply-form">
+                <input type="hidden" name="company_id" value="{{ company.id }}">
+                <label>Internship role</label>
+                <select name="internship_role" required>
+                    {% for role in (company.internship_roles or company.roles or '').split(',') %}
+                    {% if role.strip() %}<option value="{{ role.strip() }}">{{ role.strip() }}</option>{% endif %}
+                    {% endfor %}
+                </select>
+                <label>Your student email</label>
+                <input type="email" name="student_email" placeholder="you@example.com" required>
+                <label>Additional notes (optional)</label>
+                <textarea name="notes" rows="3" placeholder="Add a short note"></textarea>
+                <button type="submit" class="apply-submit">Apply Now →</button>
+            </form>
+            {% else %}<p>Applications are currently closed for this company.</p>{% endif %}
+        </div>
+        <div class="profile-actions">
+            <a href="{{ company.careers_url }}" target="_blank"
+               rel="noopener noreferrer">
+                Visit Careers Page ↗
+            </a>
+
+            <a href="{{ company.website }}" target="_blank"
+               rel="noopener noreferrer" class="secondary">
+                Official Website ↗
+            </a>
+        </div>
+
+    </section>
+</main>
+
+<footer>
+    <a href="/" class="footer-brand">InternTrack.</a>
+    <p>Connecting students with opportunities.</p>
+    <span>© 2026 InternTrack</span>
+</footer>
+
+</body>
+</html>

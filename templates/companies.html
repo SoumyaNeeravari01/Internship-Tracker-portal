@@ -1,0 +1,211 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>InternTrack | Explore Companies</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/companies.css') }}">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+</head>
+
+<body>
+
+<header class="navbar">
+    <a href="/" class="brand">
+        <span class="brand-logo">I</span>
+        InternTrack
+    </a>
+
+    <nav>
+        <a href="/" class="nav-active">Explore</a>
+        <a href="#companies">Companies</a>
+        <a href="#about">About</a>
+        <a href="#companies">Opportunities</a>
+    </nav>
+
+    <a href="/dashboard" class="nav-cta">My Dashboard ↗</a>
+</header>
+
+<section class="hero">
+    <div class="hero-content">
+        <span class="welcome-tag">✦ YOUR CAREER JOURNEY STARTS HERE</span>
+
+        <h1>
+            Find the company<br>
+            <span>where you belong.</span>
+        </h1>
+
+        <p>
+            Explore amazing companies, discover your interests
+            and take your first step towards a successful career.
+        </p>
+
+        <form action="/companies" method="GET" class="hero-search">
+            <span>⌕</span>
+            <input type="text" name="q"
+                   placeholder="Search company, skills or technology..."
+                   value="{{ request.args.get('q', '') }}">
+            <button type="submit">Explore Now</button>
+        </form>
+
+        <div class="hero-trust">
+            <span>✓ Easy company discovery</span>
+            <span>✓ Student friendly</span>
+        </div>
+    </div>
+
+    <div class="hero-art">
+        <div class="art-circle circle-one"></div>
+        <div class="art-circle circle-two"></div>
+
+        <div class="art-main">
+            <span>✦</span>
+            <strong>Dream big.</strong>
+            <p>Start somewhere amazing.</p>
+        </div>
+
+        <div class="art-note note-one">
+            <span class="note-icon">💼</span>
+            <div>
+                <b>Explore careers</b>
+                <small>Discover new paths</small>
+            </div>
+        </div>
+
+        <div class="art-note note-two">
+            <span class="note-icon">🚀</span>
+            <div>
+                <b>Build your future</b>
+                <small>One step at a time</small>
+            </div>
+        </div>
+    </div>
+</section>
+
+<main class="main-content" id="companies">
+    {% with messages = get_flashed_messages() %}{% if messages %}<div class="flash-message">{% for message in messages %}{{ message }}{% endfor %}</div>{% endif %}{% endwith %}
+
+    <div class="section-title">
+        <div>
+            <span class="section-label">THE RIGHT PLACE FOR YOU</span>
+            <h2>Explore companies</h2>
+            <p>Discover organisations that match your career goals.</p>
+        </div>
+
+        <span class="company-count">
+            {{ companies|length }} companies
+        </span>
+    </div>
+
+    <form action="/companies" method="GET" class="filter-panel">
+        <input type="text" name="q"
+               placeholder="Search companies or skills..."
+               value="{{ request.args.get('q', '') }}">
+
+        <select name="industry">
+            <option value="">All industries</option>
+            {% for item in ["Technology", "Software", "IT Services",
+                            "Consulting", "E-commerce"] %}
+            <option value="{{ item }}"
+                {% if request.args.get('industry') == item %}selected{% endif %}>
+                {{ item }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <input type="text" name="location"
+               placeholder="Enter location..."
+               value="{{ request.args.get('location', '') }}">
+
+        <button type="submit">Apply Filters</button>
+        <a href="/companies" class="clear-filter">Clear</a>
+    </form>
+
+    <div class="company-grid">
+
+        {% for company in companies %}
+        <article class="company-card">
+
+            <div class="company-card-top">
+                <div class="company-avatar">
+                    {{ company.name[0] }}
+                </div>
+
+                <span class="industry-badge">
+                    {{ company.industry }}
+                </span>
+
+                <button class="bookmark-btn"
+                        type="button"
+                        data-company-id="{{ company.id }}"
+                        aria-label="Save {{ company.name }}">
+                    ♡
+                </button>
+            </div>
+
+            <h3>{{ company.name }}</h3>
+
+            <p class="location">⌖ {{ company.location }}</p>
+
+            <p class="description">{{ company.description }}</p>
+            <div class="company-stats">
+                <span><b>{{ company.applicants }}</b> applicants</span>
+                <span><b>{{ company.hired }}</b> hired</span>
+                <span class="status-pill {{ (company.hiring_status or 'Open')|lower|replace(' ', '-') }}">{{ company.hiring_status or 'Open' }}</span>
+            </div>
+
+            <div class="skill-list">
+                {% for skill in (company.technologies or company.skills or '').split(',') %}
+                <span>{{ skill.strip() }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="card-bottom">
+                <span>Explore opportunities</span>
+                <a href="{{ url_for('company_details',
+                                    company_id=company.id) }}">
+                    View Profile →
+                </a>
+            </div>
+
+        </article>
+
+        {% else %}
+        <div class="empty-state">
+            <span>🔎</span>
+            <h3>No companies found</h3>
+            <p>Try another company name, skill or location.</p>
+            <a href="/companies">Show all companies</a>
+        </div>
+        {% endfor %}
+
+    </div>
+
+</main>
+
+<section class="career-banner" id="about">
+    <div>
+        <span>✦ YOUR FUTURE IS WAITING</span>
+        <h2>Every great career begins with a discovery.</h2>
+        <p>Find the right company. Discover your potential. Make it happen.</p>
+    </div>
+
+    <a href="#companies">Explore Companies →</a>
+</section>
+
+<footer>
+    <a href="/" class="footer-brand">InternTrack.</a>
+    <p>Connecting students with opportunities.</p>
+    <span>© 2026 InternTrack. Built for students.</span>
+</footer>
+
+<script src="{{ url_for('static', filename='js/companies.js') }}"></script>
+
+</body>
+</html>
